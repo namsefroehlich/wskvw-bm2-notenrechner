@@ -86,20 +86,6 @@
           }));
         };
 
-        const exportToCSV = () => {
-          const rows = [
-            ['BM2 Dienstleistungen - Notenkalkulation'],
-            [''],
-            ['GESAMTNOTE', berechneGesamtnote()]
-          ];
-          const csvContent = rows.map(row => row.join(';')).join('\n');
-          const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'BM2_Notenkalkulation.csv';
-          link.click();
-        };
-
         const FachZeile = ({ titel, fach, mitBmp = true }) => (
           <tr className="border-b hover:bg-gray-50">
             <td className="py-2 px-3 font-medium text-sm">{titel}</td>
@@ -187,7 +173,7 @@
                         value={noten.idaf1}
                         onChange={(e) => handleChange('idaf1', null, e.target.value)}
                         className="w-20 px-2 py-1 border rounded text-center"
-                        placeholder="IDAF1-2"
+                        placeholder="1-2"
                       />
                     </td>
                     <td className="py-2 px-3">
@@ -196,7 +182,7 @@
                         value={noten.idaf2}
                         onChange={(e) => handleChange('idaf2', null, e.target.value)}
                         className="w-20 px-2 py-1 border rounded text-center"
-                        placeholder="IDAF3"
+                        placeholder="3"
                       />
                     </td>
                     <td className="py-2 px-3 bg-blue-50 text-center font-semibold">
@@ -227,24 +213,12 @@
               </div>
               <p className="text-center text-sm text-gray-600 mt-2">(Gerundet auf Zehntel)</p>
             </div>
-
-            <button
-              onClick={exportToCSV}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 transition"
-            >
-              <svg id="downloadIcon" width="20" height="20"></svg>
-              Als CSV exportieren
-            </button>
           </div>
         );
       };
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<BM2Notenkalkulation />);
-
-      lucide.createIcons();
-      lucide.createIcon('Download', lucide.icons.Download).toSvg();
-      document.getElementById('downloadIcon').outerHTML = lucide.icons.Download.toSvg();
     </script>
   </body>
 </html>

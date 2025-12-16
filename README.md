@@ -5,6 +5,8 @@
 **Berechnung der Berufsmaturitätszeugnisnoten**  
 *(Stand: 13.07.2023, ohne Gewähr)*  
 
+https://namsefroehlich.github.io/wskvw-bm2-notenrechner/
+
 ---
 
 ### a) Erfahrungsnote (ERFA)

@@ -4,221 +4,271 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BM2 Notenkalkulation</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100">
-    <div id="root"></div>
+    <div class="w-full max-w-6xl mx-auto p-6 bg-white shadow-sm mt-6 rounded-lg">
+      <h1 class="text-2xl font-bold mb-2">BM2 Dienstleistungen - Notenkalkulation</h1>
+      <div class="flex justify-between items-center mb-6">
+        <p class="text-sm text-gray-600">
+          Vollzeit ab 2015 (Stand 13.07.2023, ohne Gewähr)
+        </p>
+        <button
+          id="resetBtn"
+          class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+        >
+          Alle Noten löschen
+        </button>
+      </div>
 
-    <script type="text/babel">
-      const { useState } = React;
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full border-collapse border">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="py-2 px-3 border text-left">Fach</th>
+              <th class="py-2 px-3 border text-center">1. Sem</th>
+              <th class="py-2 px-3 border text-center">2. Sem</th>
+              <th class="py-2 px-3 border text-center">ERFA</th>
+              <th class="py-2 px-3 border text-center">BMP</th>
+              <th class="py-2 px-3 border text-center">Fachnote</th>
+              <th class="py-2 px-3 border text-center">Gewicht</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
 
-      const BM2Notenkalkulation = () => {
-        const [noten, setNoten] = useState({
-          deutsch: { sem1: '', sem2: '', bmp: '' },
-          franzoesisch: { sem1: '', sem2: '', bmp: '' },
-          englisch: { sem1: '', sem2: '', bmp: '' },
-          mathematik: { sem1: '', sem2: '', bmp: '' },
-          frw: { sem1: '', sem2: '', bmp: '' },
-          wr: { sem1: '', sem2: '', bmp: '' },
-          geschichtePolitik: { sem1: '', sem2: '' },
-          wrErgaenzung: { sem1: '', sem2: '' },
-          idaf1: '',
-          idaf2: '',
-          idpa: ''
-        });
+      <div class="p-4 bg-green-50 rounded border-2 border-green-500 mb-6">
+        <h3 class="text-xl font-bold text-center mb-2">GESAMTNOTE</h3>
+        <div id="gesamtnote" class="text-4xl font-bold text-center text-green-700">-</div>
+        <p class="text-center text-sm text-gray-600 mt-2">(Gerundet auf Zehntel)</p>
+      </div>
+    </div>
 
-        const rundeHalbGanz = (wert) => {
-          if (wert === '' || isNaN(wert)) return '';
-          return Math.round(wert * 2) / 2;
-        };
-
-        const berechneErfa = (sem1, sem2) => {
-          const s1 = parseFloat(sem1);
-          const s2 = parseFloat(sem2);
-          if (isNaN(s1) || isNaN(s2)) return '';
-          return rundeHalbGanz((s1 + s2) / 2);
-        };
-
-        const berechneFachnote = (erfa, bmp) => {
-          const e = parseFloat(erfa);
-          const b = parseFloat(bmp);
-          if (isNaN(e) || isNaN(b)) return '';
-          return rundeHalbGanz((e + b) / 2);
-        };
-
-        const berechneIdaf = () => {
-          const i1 = parseFloat(noten.idaf1);
-          const i2 = parseFloat(noten.idaf2);
-          const idpa = parseFloat(noten.idpa);
-          if (isNaN(i1) || isNaN(i2) || isNaN(idpa)) return '';
-          const avgIdaf = (i1 + i2) / 2;
-          return rundeHalbGanz((avgIdaf + idpa) / 2);
-        };
-
-        const berechneGesamtnote = () => {
-          const fachnoten = [
-            berechneFachnote(berechneErfa(noten.deutsch.sem1, noten.deutsch.sem2), noten.deutsch.bmp),
-            berechneFachnote(berechneErfa(noten.franzoesisch.sem1, noten.franzoesisch.sem2), noten.franzoesisch.bmp),
-            berechneFachnote(berechneErfa(noten.englisch.sem1, noten.englisch.sem2), noten.englisch.bmp),
-            berechneFachnote(berechneErfa(noten.mathematik.sem1, noten.mathematik.sem2), noten.mathematik.bmp),
-            berechneFachnote(berechneErfa(noten.frw.sem1, noten.frw.sem2), noten.frw.bmp),
-            berechneFachnote(berechneErfa(noten.wr.sem1, noten.wr.sem2), noten.wr.bmp),
-            berechneErfa(noten.geschichtePolitik.sem1, noten.geschichtePolitik.sem2),
-            berechneErfa(noten.wrErgaenzung.sem1, noten.wrErgaenzung.sem2),
-            berechneIdaf()
-          ];
-          const gueltigeNoten = fachnoten.filter(n => n !== '').map(parseFloat);
-          if (gueltigeNoten.length === 0) return '';
-          const summe = gueltigeNoten.reduce((a, b) => a + b, 0);
-          return Math.round((summe / 9) * 10) / 10;
-        };
-
-        const handleChange = (fach, feld, wert) => {
-          setNoten(prev => ({
-            ...prev,
-            [fach]: typeof prev[fach] === 'object'
-              ? { ...prev[fach], [feld]: wert }
-              : wert
-          }));
-        };
-
-        const FachZeile = ({ titel, fach, mitBmp = true }) => (
-          <tr className="border-b hover:bg-gray-50">
-            <td className="py-2 px-3 font-medium text-sm">{titel}</td>
-            <td className="py-2 px-3">
-              <input
-                type="number" step="0.5" min="1" max="6"
-                value={noten[fach].sem1}
-                onChange={(e) => handleChange(fach, 'sem1', e.target.value)}
-                className="w-20 px-2 py-1 border rounded text-center"
-              />
-            </td>
-            <td className="py-2 px-3">
-              <input
-                type="number" step="0.5" min="1" max="6"
-                value={noten[fach].sem2}
-                onChange={(e) => handleChange(fach, 'sem2', e.target.value)}
-                className="w-20 px-2 py-1 border rounded text-center"
-              />
-            </td>
-            <td className="py-2 px-3 text-center font-semibold bg-blue-50">
-              {berechneErfa(noten[fach].sem1, noten[fach].sem2)}
-            </td>
-            {mitBmp ? (
-              <>
-                <td className="py-2 px-3">
-                  <input
-                    type="number" step="0.5" min="1" max="6"
-                    value={noten[fach].bmp}
-                    onChange={(e) => handleChange(fach, 'bmp', e.target.value)}
-                    className="w-20 px-2 py-1 border rounded text-center"
-                  />
-                </td>
-                <td className="py-2 px-3 text-center font-bold bg-green-100">
-                  {berechneFachnote(berechneErfa(noten[fach].sem1, noten[fach].sem2), noten[fach].bmp)}
-                </td>
-              </>
-            ) : (
-              <>
-                <td className="py-2 px-3 text-center text-gray-400">-</td>
-                <td className="py-2 px-3 text-center font-bold bg-green-100">
-                  {berechneErfa(noten[fach].sem1, noten[fach].sem2)}
-                </td>
-              </>
-            )}
-            <td className="py-2 px-3 text-center text-sm">1/9</td>
-          </tr>
-        );
-
-        return (
-          <div className="w-full max-w-6xl mx-auto p-6 bg-white shadow-sm mt-6 rounded-lg">
-            <h1 className="text-2xl font-bold mb-2">BM2 Dienstleistungen - Notenkalkulation</h1>
-            <p className="text-sm text-gray-600 mb-6">
-              Vollzeit ab 2015 (Stand 13.07.2023, ohne Gewähr)
-            </p>
-
-            <div className="overflow-x-auto mb-6">
-              <table className="w-full border-collapse border">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="py-2 px-3 border text-left">Fach</th>
-                    <th className="py-2 px-3 border text-center">1. Sem</th>
-                    <th className="py-2 px-3 border text-center">2. Sem</th>
-                    <th className="py-2 px-3 border text-center">ERFA</th>
-                    <th className="py-2 px-3 border text-center">BMP</th>
-                    <th className="py-2 px-3 border text-center">Fachnote</th>
-                    <th className="py-2 px-3 border text-center">Gewicht</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <FachZeile titel="Deutsch" fach="deutsch" />
-                  <FachZeile titel="Französisch" fach="franzoesisch" />
-                  <FachZeile titel="Englisch" fach="englisch" />
-                  <FachZeile titel="Mathematik" fach="mathematik" />
-                  <FachZeile titel="Finanz- + Rechnungswesen" fach="frw" />
-                  <FachZeile titel="Wirtschaft + Recht" fach="wr" />
-                  <FachZeile titel="Geschichte und Politik (EF)" fach="geschichtePolitik" mitBmp={false} />
-                  <FachZeile titel="Wirtschaft und Recht (EF)" fach="wrErgaenzung" mitBmp={false} />
-
-                  {/* IDAF Zeile */}
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-3 font-medium text-sm">Interdisziplinäres Arbeiten (IDAF + IDPA)</td>
-                    <td className="py-2 px-3">
-                      <input
-                        type="number" step="0.5" min="1" max="6"
-                        value={noten.idaf1}
-                        onChange={(e) => handleChange('idaf1', null, e.target.value)}
-                        className="w-20 px-2 py-1 border rounded text-center"
-                        placeholder="1-2"
-                      />
-                    </td>
-                    <td className="py-2 px-3">
-                      <input
-                        type="number" step="0.5" min="1" max="6"
-                        value={noten.idaf2}
-                        onChange={(e) => handleChange('idaf2', null, e.target.value)}
-                        className="w-20 px-2 py-1 border rounded text-center"
-                        placeholder="3"
-                      />
-                    </td>
-                    <td className="py-2 px-3 bg-blue-50 text-center font-semibold">
-                      {(noten.idaf1 && noten.idaf2) ? rundeHalbGanz((parseFloat(noten.idaf1) + parseFloat(noten.idaf2)) / 2) : ''}
-                    </td>
-                    <td className="py-2 px-3">
-                      <input
-                        type="number" step="0.5" min="1" max="6"
-                        value={noten.idpa}
-                        onChange={(e) => handleChange('idpa', null, e.target.value)}
-                        className="w-20 px-2 py-1 border rounded text-center"
-                        placeholder="IDPA"
-                      />
-                    </td>
-                    <td className="py-2 px-3 text-center font-bold bg-green-100">
-                      {berechneIdaf()}
-                    </td>
-                    <td className="py-2 px-3 text-center text-sm">1/9</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded border-2 border-green-500 mb-6">
-              <h3 className="text-xl font-bold text-center mb-2">GESAMTNOTE</h3>
-              <div className="text-4xl font-bold text-center text-green-700">
-                {berechneGesamtnote() || '-'}
-              </div>
-              <p className="text-center text-sm text-gray-600 mt-2">(Gerundet auf Zehntel)</p>
-            </div>
-          </div>
-        );
+    <script>
+      const initialNoten = {
+        deutsch: { sem1: '', sem2: '', bmp: '' },
+        franzoesisch: { sem1: '', sem2: '', bmp: '' },
+        englisch: { sem1: '', sem2: '', bmp: '' },
+        mathematik: { sem1: '', sem2: '', bmp: '' },
+        frw: { sem1: '', sem2: '', bmp: '' },
+        wr: { sem1: '', sem2: '', bmp: '' },
+        geschichtePolitik: { sem1: '', sem2: '' },
+        wrErgaenzung: { sem1: '', sem2: '' },
+        idaf1: '',
+        idaf2: '',
+        idpa: ''
       };
 
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<BM2Notenkalkulation />);
+      let noten = {};
+
+      function loadNoten() {
+        const saved = localStorage.getItem('bm2-noten');
+        noten = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialNoten));
+      }
+
+      function saveNoten() {
+        localStorage.setItem('bm2-noten', JSON.stringify(noten));
+      }
+
+      function rundeHalbGanz(wert) {
+        if (wert === '' || isNaN(wert)) return '';
+        return Math.round(wert * 2) / 2;
+      }
+
+      function berechneErfa(sem1, sem2) {
+        const s1 = parseFloat(sem1);
+        const s2 = parseFloat(sem2);
+        if (isNaN(s1) || isNaN(s2)) return '';
+        return rundeHalbGanz((s1 + s2) / 2);
+      }
+
+      function berechneFachnote(erfa, bmp) {
+        const e = parseFloat(erfa);
+        const b = parseFloat(bmp);
+        if (isNaN(e) || isNaN(b)) return '';
+        return rundeHalbGanz((e + b) / 2);
+      }
+
+      function berechneIdaf() {
+        const i1 = parseFloat(noten.idaf1);
+        const i2 = parseFloat(noten.idaf2);
+        const idpa = parseFloat(noten.idpa);
+        if (isNaN(i1) || isNaN(i2) || isNaN(idpa)) return '';
+        const avgIdaf = (i1 + i2) / 2;
+        return rundeHalbGanz((avgIdaf + idpa) / 2);
+      }
+
+      function berechneGesamtnote() {
+        const fachnoten = [
+          berechneFachnote(berechneErfa(noten.deutsch.sem1, noten.deutsch.sem2), noten.deutsch.bmp),
+          berechneFachnote(berechneErfa(noten.franzoesisch.sem1, noten.franzoesisch.sem2), noten.franzoesisch.bmp),
+          berechneFachnote(berechneErfa(noten.englisch.sem1, noten.englisch.sem2), noten.englisch.bmp),
+          berechneFachnote(berechneErfa(noten.mathematik.sem1, noten.mathematik.sem2), noten.mathematik.bmp),
+          berechneFachnote(berechneErfa(noten.frw.sem1, noten.frw.sem2), noten.frw.bmp),
+          berechneFachnote(berechneErfa(noten.wr.sem1, noten.wr.sem2), noten.wr.bmp),
+          berechneErfa(noten.geschichtePolitik.sem1, noten.geschichtePolitik.sem2),
+          berechneErfa(noten.wrErgaenzung.sem1, noten.wrErgaenzung.sem2),
+          berechneIdaf()
+        ];
+        const gueltigeNoten = fachnoten.filter(n => n !== '').map(parseFloat);
+        if (gueltigeNoten.length === 0) return '';
+        const summe = gueltigeNoten.reduce((a, b) => a + b, 0);
+        return Math.round((summe / 9) * 10) / 10;
+      }
+
+      function updateGesamtnote() {
+        document.getElementById('gesamtnote').textContent = berechneGesamtnote() || '-';
+      }
+
+      function createInput(value, fach, feld, placeholder = '') {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '0.5';
+        input.min = '1';
+        input.max = '6';
+        input.value = value;
+        input.placeholder = placeholder;
+        input.className = 'w-20 px-2 py-1 border rounded text-center';
+        input.addEventListener('input', (e) => {
+          if (feld) {
+            noten[fach][feld] = e.target.value;
+          } else {
+            noten[fach] = e.target.value;
+          }
+          saveNoten();
+          render();
+        });
+        return input;
+      }
+
+      function createFachZeile(titel, fach, mitBmp = true) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b hover:bg-gray-50';
+
+        const tdTitel = document.createElement('td');
+        tdTitel.className = 'py-2 px-3 font-medium text-sm';
+        tdTitel.textContent = titel;
+        tr.appendChild(tdTitel);
+
+        const tdSem1 = document.createElement('td');
+        tdSem1.className = 'py-2 px-3';
+        tdSem1.appendChild(createInput(noten[fach].sem1, fach, 'sem1'));
+        tr.appendChild(tdSem1);
+
+        const tdSem2 = document.createElement('td');
+        tdSem2.className = 'py-2 px-3';
+        tdSem2.appendChild(createInput(noten[fach].sem2, fach, 'sem2'));
+        tr.appendChild(tdSem2);
+
+        const tdErfa = document.createElement('td');
+        tdErfa.className = 'py-2 px-3 text-center font-semibold bg-blue-50';
+        tdErfa.textContent = berechneErfa(noten[fach].sem1, noten[fach].sem2);
+        tr.appendChild(tdErfa);
+
+        if (mitBmp) {
+          const tdBmp = document.createElement('td');
+          tdBmp.className = 'py-2 px-3';
+          tdBmp.appendChild(createInput(noten[fach].bmp, fach, 'bmp'));
+          tr.appendChild(tdBmp);
+
+          const tdFachnote = document.createElement('td');
+          tdFachnote.className = 'py-2 px-3 text-center font-bold bg-green-100';
+          tdFachnote.textContent = berechneFachnote(berechneErfa(noten[fach].sem1, noten[fach].sem2), noten[fach].bmp);
+          tr.appendChild(tdFachnote);
+        } else {
+          const tdBmpEmpty = document.createElement('td');
+          tdBmpEmpty.className = 'py-2 px-3 text-center text-gray-400';
+          tdBmpEmpty.textContent = '-';
+          tr.appendChild(tdBmpEmpty);
+
+          const tdFachnote = document.createElement('td');
+          tdFachnote.className = 'py-2 px-3 text-center font-bold bg-green-100';
+          tdFachnote.textContent = berechneErfa(noten[fach].sem1, noten[fach].sem2);
+          tr.appendChild(tdFachnote);
+        }
+
+        const tdGewicht = document.createElement('td');
+        tdGewicht.className = 'py-2 px-3 text-center text-sm';
+        tdGewicht.textContent = '1/9';
+        tr.appendChild(tdGewicht);
+
+        return tr;
+      }
+
+      function createIdafZeile() {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b hover:bg-gray-50';
+
+        const tdTitel = document.createElement('td');
+        tdTitel.className = 'py-2 px-3 font-medium text-sm';
+        tdTitel.textContent = 'Interdisziplinäres Arbeiten (IDAF + IDPA)';
+        tr.appendChild(tdTitel);
+
+        const tdIdaf1 = document.createElement('td');
+        tdIdaf1.className = 'py-2 px-3';
+        tdIdaf1.appendChild(createInput(noten.idaf1, 'idaf1', null, '1-2'));
+        tr.appendChild(tdIdaf1);
+
+        const tdIdaf2 = document.createElement('td');
+        tdIdaf2.className = 'py-2 px-3';
+        tdIdaf2.appendChild(createInput(noten.idaf2, 'idaf2', null, '3'));
+        tr.appendChild(tdIdaf2);
+
+        const tdErfa = document.createElement('td');
+        tdErfa.className = 'py-2 px-3 bg-blue-50 text-center font-semibold';
+        if (noten.idaf1 && noten.idaf2) {
+          tdErfa.textContent = rundeHalbGanz((parseFloat(noten.idaf1) + parseFloat(noten.idaf2)) / 2);
+        }
+        tr.appendChild(tdErfa);
+
+        const tdIdpa = document.createElement('td');
+        tdIdpa.className = 'py-2 px-3';
+        tdIdpa.appendChild(createInput(noten.idpa, 'idpa', null, 'IDPA'));
+        tr.appendChild(tdIdpa);
+
+        const tdFachnote = document.createElement('td');
+        tdFachnote.className = 'py-2 px-3 text-center font-bold bg-green-100';
+        tdFachnote.textContent = berechneIdaf();
+        tr.appendChild(tdFachnote);
+
+        const tdGewicht = document.createElement('td');
+        tdGewicht.className = 'py-2 px-3 text-center text-sm';
+        tdGewicht.textContent = '1/9';
+        tr.appendChild(tdGewicht);
+
+        return tr;
+      }
+
+      function render() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        tbody.appendChild(createFachZeile('Deutsch', 'deutsch'));
+        tbody.appendChild(createFachZeile('Französisch', 'franzoesisch'));
+        tbody.appendChild(createFachZeile('Englisch', 'englisch'));
+        tbody.appendChild(createFachZeile('Mathematik', 'mathematik'));
+        tbody.appendChild(createFachZeile('Finanz- + Rechnungswesen', 'frw'));
+        tbody.appendChild(createFachZeile('Wirtschaft + Recht', 'wr'));
+        tbody.appendChild(createFachZeile('Geschichte und Politik (EF)', 'geschichtePolitik', false));
+        tbody.appendChild(createFachZeile('Wirtschaft und Recht (EF)', 'wrErgaenzung', false));
+        tbody.appendChild(createIdafZeile());
+
+        updateGesamtnote();
+      }
+
+      function resetData() {
+        if (confirm('Möchten Sie wirklich alle Noten löschen?')) {
+          noten = JSON.parse(JSON.stringify(initialNoten));
+          localStorage.removeItem('bm2-noten');
+          render();
+        }
+      }
+
+      document.getElementById('resetBtn').addEventListener('click', resetData);
+
+      loadNoten();
+      render();
     </script>
   </body>
 </html>
